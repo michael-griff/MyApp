@@ -1,0 +1,46 @@
+version: 0.2
+
+phases:
+  install:
+    runtime-versions:
+      python: 3.9
+    commands:
+      - pip3 install -r test/requirements.txt
+  pre_build:
+    commands:
+      - echo "Entered the pre_build phase...Nothing to see folks."
+  build:
+    commands:
+      - echo "Entered the build phase..."
+      
+      - echo "Running tests...."
+      - pytest -s -vvv test --junitxml=reports/example.xml
+
+      - echo "Updating template.yaml with valid lambda role..."
+      - sed -i -e 's|arn:aws:iam::999999999999:role/xxxxx|${lambda_role}|g' template.yaml
+                  
+      - echo "Displaying the template.yaml file..."
+      - more template.yaml
+      
+      - echo "Building lambda (AWS SAM)..."
+      - sam build
+    on-failure: ABORT
+ 
+  post_build:
+    commands:
+      - echo "Entered the post_build phase..."
+      - echo "Packaging lambda and adding a CloudFormation file (template.yml)..."
+      - echo '"name":"'${bucket}'"'
+      - sam package --output-template-file template.yaml --s3-bucket ${bucket}
+      - echo 'ls -la'
+
+artifacts:
+  type: zip
+  files:
+    - template.yaml
+
+reports:
+  Reports:
+    files:
+      - "**/*"
+    base-directory: "reports"

@@ -1,0 +1,34 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  sam-demo
+  Sample SAM Template for sam-demo
+
+#
+Globals:
+  Function:
+    Timeout: 5
+
+#
+Resources:
+  SamDemoFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: app
+      Handler: app.lambda_handler
+      Runtime: python3.9
+      Role: arn:aws:iam::999999999999:role/xxxxx
+      MemorySize: 128
+      Timeout: 100
+      AutoPublishAlias: live
+      Events:
+        HelloWorld:
+          Type: HttpApi
+          Properties:
+            Path: /
+            Method: GET
+
+Outputs:
+  SamDemoFunction:
+    Description: "Sam Demo Lambda Function ARN"
+    Value: !GetAtt SamDemoFunction.Arn
